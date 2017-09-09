@@ -27,7 +27,7 @@
 
 </style>
 <svg width="960" height="1060"></svg>
-<script src="./d3.min.js"></script>
+<script src="./d3.js"></script>
 <script>
 
 let svg = d3.select("svg");
@@ -36,12 +36,94 @@ let width = svg.attr("width");
 let g = svg.append("g").attr("transform", "translate(" + (width / 2 + 40) + "," + (height / 2 + 90) + ")");
 
 let data = {
-  "name": "Root Node",
-  "children": [
-    { name: "Child 1", children: [] },
-    { name: "Child 2", children: [
-      { name: "Child 3", children: [] }
-    ]}
+  "name": "Structural Risk Analysis",
+	"children": [
+	  { "name": "Seismic Hazard Analysis", "children": [
+		  { "name": "Fault Movement"},
+		  { "name": "Design Response Spectrum"},
+		  { "name": "National Hazard Maps"},
+		  { "name": "Deaggregation"},
+		  { "name": "Floor Response Spectrum"},
+		  { "name": "Random Excitation"},
+		  { "name": "Ground Motion", "children":[
+			  {"name": "Variability"},
+			  {"name": "Near vs Far Field Ground Motion"},
+			  {"name": "Horizontal vs Vertical"},
+			  {"name": "Selection and Scaling"},
+			  {"name": "Rotation"},
+			  {"name": "Permutation"},
+			  {"name": "Seismic Intensity Level"},
+			  {"name": "Spatial Incoherency"}
+			]},
+		  {"name": "Site Specific Hazard Assessment"},
+		  {"name": "Deterministic"},
+		  {"name": "Probabilistic"},
+		  {"name": "Real vs Synthetic Acceleration"},
+		  {"name": "Soil Structure Interaction"},
+		  {"name": "Soil Structure Interaction", "children":[
+			  {"name": "Wave Propagation"},
+			  {"name": "Deconvolution"},
+			  {"name": "Radiation Damping"}
+			]},
+		  {"name": "Deconvolution"},
+		  {"name": "Probabilistic"}
+	  ]},
+    { "name": "Ageing Hazard Analysis", "children": [
+		  {"name": "Time"},
+		  {"name": "Creep"},
+		  {"name": "Temperature"},
+		  {"name": "Relative Humidity"},
+		  {"name": "Alkali Slica Reation", "children": [
+			  {"name": "Temperature History"},
+			  {"name": "RH History"},
+			  {"name": "Anisotropic Expansion"},
+			  {"name": "Retardation (cracks)"},
+			  {"name": "Degradation", "children": [
+				  {"name": "Tensile Strength"},
+				  {"name": "Elastic Modulus"},
+				  {"name": "Fracture Energy"}
+				]}
+			]},
+		  {"name": "Chloride Dffusion"}
+	  ]},
+    { "name": "Structural Analysis", "children": [
+		  {"name": "Model", "children": [
+			  {"name": "Continuum"},
+			  {"name": "Stick/Lumped Mass"}
+			]},
+		  {"name": "Analysis", "children": [
+			  {"name": "Deterministic", "children": [
+				  {"name": "Static"},
+			  	{"name": "Pseudo-Dynamic", "children": [
+					  {"name": "Seismic Coefficient Analysis"},
+					  {"name": "Response Spectrum Analysis"}
+				  ]},
+				  {"name": "Dynamic", "children": [
+				    {"name": "Modal Superposition"},
+					  {"name": "Time Integration"}
+				  ]},
+			  ]},
+			  {"name": "Probabilistic", "children": [
+				  {"name": "Incremental Dynamic Analysis"},
+				  {"name": "Multiple Strip Analysis"},
+				  {"name": "Cloud Analysis"},
+				  {"name": "Endurance Time Analysis"}
+				]},
+			]},
+		  {"name": "Constitutive Models", "children": [
+			  {"name": "Coninuum", "children": [
+				  {"name": "Damage"},
+				  {"name": "Plasticity"},
+				  {"name": "Damage-Fracture"}
+				]},
+        {"name": "Discrete", "children": [
+				  {"name": "Mohr-Coulomb"},
+				  {"name": "Cohesive Crack"}
+				]},
+			]},
+	  ]},
+    { "name": "Damage Analysis" },
+    { "name": "Loss Analysis" }
   ]
 };
 
@@ -57,8 +139,8 @@ let link = g.selectAll(".link")
   .append("path")
   .attr("class", "link")
   .attr("d", d3.linkRadial()
-    .angle(function(d) { return d.x; })
-    .radius(function(d) { return d.y; }));
+  .angle(function(d) { return d.x; })
+  .radius(function(d) { return d.y; }));
 
 let node = g.selectAll(".node")
   .data(imported.descendants())
