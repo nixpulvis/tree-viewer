@@ -26,143 +26,115 @@
 }
 
 </style>
-<svg width="960" height="1060"></svg>
+<input id="modeInput1" type="radio" name="mode" value="linear" checked>
+<label for=modeInput1">Linear</label>
+<input id="modeInput2" type="radio" name="mode" value="radial">
+<label for=modeInput2">Radial</label>
+<input id="fileInput" type="file" name="input-name" />
+<svg width="1400" height="1920"></svg>
 <script src="./d3.js"></script>
 <script>
 
 let svg = d3.select("svg");
 let height = svg.attr("height");
 let width = svg.attr("width");
-let g = svg.append("g").attr("transform", "translate(" + (width / 2 + 40) + "," + (height / 2 + 90) + ")");
+let fileInput = document.getElementById('fileInput');
 
-let data = {
-  "name": "Structural Risk Analysis",
-	"children": [
-	  { "name": "Seismic Hazard Analysis", "children": [
-		  { "name": "Fault Movement"},
-		  { "name": "Design Response Spectrum"},
-		  { "name": "National Hazard Maps"},
-		  { "name": "Deaggregation"},
-		  { "name": "Floor Response Spectrum"},
-		  { "name": "Random Excitation"},
-		  { "name": "Ground Motion", "children":[
-			  {"name": "Variability"},
-			  {"name": "Near vs Far Field Ground Motion"},
-			  {"name": "Horizontal vs Vertical"},
-			  {"name": "Selection and Scaling"},
-			  {"name": "Rotation"},
-			  {"name": "Permutation"},
-			  {"name": "Seismic Intensity Level"},
-			  {"name": "Spatial Incoherency"}
-			]},
-		  {"name": "Site Specific Hazard Assessment"},
-		  {"name": "Deterministic"},
-		  {"name": "Probabilistic"},
-		  {"name": "Real vs Synthetic Acceleration"},
-		  {"name": "Soil Structure Interaction"},
-		  {"name": "Soil Structure Interaction", "children":[
-			  {"name": "Wave Propagation"},
-			  {"name": "Deconvolution"},
-			  {"name": "Radiation Damping"}
-			]},
-		  {"name": "Deconvolution"},
-		  {"name": "Probabilistic"}
-	  ]},
-    { "name": "Ageing Hazard Analysis", "children": [
-		  {"name": "Time"},
-		  {"name": "Creep"},
-		  {"name": "Temperature"},
-		  {"name": "Relative Humidity"},
-		  {"name": "Alkali Slica Reation", "children": [
-			  {"name": "Temperature History"},
-			  {"name": "RH History"},
-			  {"name": "Anisotropic Expansion"},
-			  {"name": "Retardation (cracks)"},
-			  {"name": "Degradation", "children": [
-				  {"name": "Tensile Strength"},
-				  {"name": "Elastic Modulus"},
-				  {"name": "Fracture Energy"}
-				]}
-			]},
-		  {"name": "Chloride Dffusion"}
-	  ]},
-    { "name": "Structural Analysis", "children": [
-		  {"name": "Model", "children": [
-			  {"name": "Continuum"},
-			  {"name": "Stick/Lumped Mass"}
-			]},
-		  {"name": "Analysis", "children": [
-			  {"name": "Deterministic", "children": [
-				  {"name": "Static"},
-			  	{"name": "Pseudo-Dynamic", "children": [
-					  {"name": "Seismic Coefficient Analysis"},
-					  {"name": "Response Spectrum Analysis"}
-				  ]},
-				  {"name": "Dynamic", "children": [
-				    {"name": "Modal Superposition"},
-					  {"name": "Time Integration"}
-				  ]},
-			  ]},
-			  {"name": "Probabilistic", "children": [
-				  {"name": "Incremental Dynamic Analysis"},
-				  {"name": "Multiple Strip Analysis"},
-				  {"name": "Cloud Analysis"},
-				  {"name": "Endurance Time Analysis"}
-				]},
-			]},
-		  {"name": "Constitutive Models", "children": [
-			  {"name": "Coninuum", "children": [
-				  {"name": "Damage"},
-				  {"name": "Plasticity"},
-				  {"name": "Damage-Fracture"}
-				]},
-        {"name": "Discrete", "children": [
-				  {"name": "Mohr-Coulomb"},
-				  {"name": "Cohesive Crack"}
-				]},
-			]},
-	  ]},
-    { "name": "Damage Analysis" },
-    { "name": "Loss Analysis" }
-  ]
-};
+fileInput.addEventListener('input', function(event) {
+  d3.json(event.currentTarget.files[0].name, function(e, d) {
+    console.log(e, d);
+    svg.select('g').remove();
+    if (document.getElementById('modeInput1').checked) {
+      linearPlot(svg, d);
+    } else {
+      radialPlot(svg, d);
+    }
+  })
+});
 
-let imported = d3.hierarchy(data);
-let tree = d3.tree()
-  .size([2 * Math.PI, 500])
-  .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth });
-let root = tree(imported);
+function linearPlot(svg, data) {
 
-let link = g.selectAll(".link")
-  .data(root.links())
-  .enter()
-  .append("path")
-  .attr("class", "link")
-  .attr("d", d3.linkRadial()
-  .angle(function(d) { return d.x; })
-  .radius(function(d) { return d.y; }));
+  let g = svg.append("g")
+    .attr("transform", "translate(" + 0 + "," + 20 + ")"); // TODO: Translate for margin.
+  let imported = d3.hierarchy(data);
+  let tree = d3.tree()
+    .size([height - 40, width - 80])
 
-let node = g.selectAll(".node")
-  .data(imported.descendants())
-  .enter()
-  .append("g")
-  .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
-  .attr("transform", function(d) { return "translate(" + radialPoint(d.x, d.y) + ")" });
+  let root = tree(imported);
 
-node.append("circle")
-  .attr("r", 2.5);
+  let link = g.selectAll('.link')
+    .data(root.descendants().slice(1))
+    .enter()
+    .append("path")
+    .attr("class", "link")
+    .attr("d", function(d) {
+      return "M" + d.y + "," + d.x
+        + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+        + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+        + " " + d.parent.y + "," + d.parent.x;
+    })
 
-node.append("text")
-  .attr("dy", "0.31em")
-  .attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
-  .attr("text-anchor", function(d) { return d.x < Math.PI == !d.children ? "start" : "end" })
-  .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; })
-  .text(function(d) { return d.data.name; });
+  let node = g.selectAll('.node')
+    .data(imported.descendants())
+    .enter()
+    .append("g")
+    .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
+    .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+  node.append("circle")
+    .attr("r", 2.5);
+
+  node.append("text")
+    .attr("dy", "0.31em")
+    .attr("x", 6)
+    .attr("text-anchor", "center")
+    .text(function(d) { return d.data.name; });
+}
+
+// TODO: Make root node bigger.
+// TODO: Decrease font size with depth.i
+// TODO: Export to vector SVG.
+function radialPlot(svg, data) {
+  let g = svg.append("g")
+    .attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
+
+  let imported = d3.hierarchy(data);
+  // TODO: Radial SVG's should be squares.
+  let tree = d3.tree()
+    .size([2 * Math.PI, width / 2])
+    .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth });
+  let root = tree(imported);
+
+  let link = g.selectAll(".link")
+    .data(root.links())
+    .enter()
+    .append("path")
+    .attr("class", "link")
+    .attr("d", d3.linkRadial()
+    .angle(function(d) { return d.x; })
+    .radius(function(d) { return d.y; }));
+
+  let node = g.selectAll(".node")
+    .data(imported.descendants())
+    .enter()
+    .append("g")
+    .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
+    .attr("transform", function(d) { return "translate(" + radialPoint(d.x, d.y) + ")" });
+
+  node.append("circle")
+    .attr("r", 2.5);
+
+  node.append("text")
+    .attr("dy", "0.31em")
+    .attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
+    .attr("text-anchor", function(d) { return d.x < Math.PI == !d.children ? "start" : "end" })
+    .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; })
+    .text(function(d) { return d.data.name; });
+}
 
 function radialPoint(x, y) {
   return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
 }
-
 
   </script>
 </body>
