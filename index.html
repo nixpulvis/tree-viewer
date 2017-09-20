@@ -31,7 +31,9 @@
 <input id="modeInput2" type="radio" name="mode" value="radial">
 <label for=modeInput2">Radial</label>
 <input id="fileInput" type="file" name="input-name" />
+<button id="save">Save SVG</button>
 <svg width="1400" height="1920"></svg>
+<script src="./FileSaver.js.min"></script>
 <script src="./d3.js"></script>
 <script>
 
@@ -42,7 +44,6 @@ let fileInput = document.getElementById('fileInput');
 
 fileInput.addEventListener('input', function(event) {
   d3.json(event.currentTarget.files[0].name, function(e, d) {
-    console.log(e, d);
     svg.select('g').remove();
     if (document.getElementById('modeInput1').checked) {
       linearPlot(svg, d);
@@ -91,8 +92,6 @@ function linearPlot(svg, data) {
     .text(function(d) { return d.data.name; });
 }
 
-// TODO: Make root node bigger.
-// TODO: Decrease font size with depth.i
 // TODO: Export to vector SVG.
 function radialPlot(svg, data) {
   let g = svg.append("g")
@@ -122,15 +121,31 @@ function radialPlot(svg, data) {
     .attr("transform", function(d) { return "translate(" + radialPoint(d.x, d.y) + ")" });
 
   node.append("circle")
-    .attr("r", 2.5);
+    // TODO: Confirm this works.
+    .style("fill", function(d) { return d.color })
+    .attr("r", function(d) { return 5 - (d.depth / 2); });
 
   node.append("text")
+    .style("font-size", function(d) { return (20 - d.depth * 2) + "px"; })
     .attr("dy", "0.31em")
     .attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
-    .attr("text-anchor", function(d) { return d.x < Math.PI == !d.children ? "start" : "end" })
-    .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; })
+    .attr("text-anchor", "middle")
+    .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")translate(0,-" + (20 - (d.depth * 3)) + ")"; })
     .text(function(d) { return d.data.name; });
 }
+
+d3.select("#save")
+  .on("click", writeDownloadLink);
+
+function writeDownloadLink() {
+  let html = d3.select("svg")
+    .attr("version", 1.1)
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .node().outerHTML;
+
+  let blob = new Blob([html], { type: "image/svg+xml" });
+  saveAs(blob, "output.svg");
+};
 
 function radialPoint(x, y) {
   return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
