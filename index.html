@@ -2,16 +2,8 @@
 <meta charset="utf-8">
 <style>
 
-.node circle {
-  fill: #999;
-}
-
 .node text {
   font: 10px sans-serif;
-}
-
-.node--internal circle {
-  fill: #555;
 }
 
 .node--internal text {
@@ -20,7 +12,6 @@
 
 .link {
   fill: none;
-  stroke: #555;
   stroke-opacity: 0.4;
   stroke-width: 1.5px;
 }
@@ -32,10 +23,16 @@
 <label for=modeInput2">Radial</label>
 <input id="fileInput" type="file" name="input-name" />
 <button id="save">Save SVG</button>
-<svg width="1400" height="1920"></svg>
+
+<!-- NOTE: Change size here. -->
+<svg width="1920" height="1920"></svg>
+
 <script src="./FileSaver.js.min"></script>
 <script src="./d3.js"></script>
 <script>
+
+// TODO: Collapsable
+// TODO: Margins and padding.
 
 let svg = d3.select("svg");
 let height = svg.attr("height");
@@ -44,64 +41,30 @@ let fileInput = document.getElementById('fileInput');
 
 fileInput.addEventListener('input', function(event) {
   d3.json(event.currentTarget.files[0].name, function(e, d) {
-    svg.select('g').remove();
-    if (document.getElementById('modeInput1').checked) {
-      linearPlot(svg, d);
-    } else {
-      radialPlot(svg, d);
-    }
+    let type = document.getElementById('modeInput1').checked ? 'linear' : 'radial';
+    plot(d, { type: type });
   })
 });
 
-function linearPlot(svg, data) {
+function plot(data, params = {}) {
+  svg.select('g').remove();
+  let g = svg.append("g");
 
-  let g = svg.append("g")
-    .attr("transform", "translate(" + 0 + "," + 20 + ")"); // TODO: Translate for margin.
-  let imported = d3.hierarchy(data);
-  let tree = d3.tree()
-    .size([height - 40, width - 80])
+  if (params.type == 'radial') {
+    g.attr("transform", "translate(" + ((width / 2) + 100) + "," + (height / 2) + ")");
+  } else {
+    g.attr("transform", "translate(10,0)");
+  }
 
-  let root = tree(imported);
+  let imported = d3.hierarchy(fillColors(data));
+  let tree = d3.tree();
 
-  let link = g.selectAll('.link')
-    .data(root.descendants().slice(1))
-    .enter()
-    .append("path")
-    .attr("class", "link")
-    .attr("d", function(d) {
-      return "M" + d.y + "," + d.x
-        + "C" + (d.y + d.parent.y) / 2 + "," + d.x
-        + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
-        + " " + d.parent.y + "," + d.parent.x;
-    })
-
-  let node = g.selectAll('.node')
-    .data(imported.descendants())
-    .enter()
-    .append("g")
-    .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
-    .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-
-  node.append("circle")
-    .attr("r", 2.5);
-
-  node.append("text")
-    .attr("dy", "0.31em")
-    .attr("x", 6)
-    .attr("text-anchor", "center")
-    .text(function(d) { return d.data.name; });
-}
-
-// TODO: Export to vector SVG.
-function radialPlot(svg, data) {
-  let g = svg.append("g")
-    .attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
-
-  let imported = d3.hierarchy(data);
-  // TODO: Radial SVG's should be squares.
-  let tree = d3.tree()
-    .size([2 * Math.PI, width / 2])
-    .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth });
+  if (params.type == 'radial') {
+    tree.size([2 * Math.PI, width / 2])
+      .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth });
+  } else {
+    tree.size([height, width]);
+  }
   let root = tree(imported);
 
   let link = g.selectAll(".link")
@@ -109,33 +72,76 @@ function radialPlot(svg, data) {
     .enter()
     .append("path")
     .attr("class", "link")
-    .attr("d", d3.linkRadial()
-    .angle(function(d) { return d.x; })
-    .radius(function(d) { return d.y; }));
+    .attr("stroke", function(d) { return linkColor(d); });
+
+  if (params.type == 'radial') {
+    link.attr("d", d3.linkRadial().angle(function(d) { return d.x; })
+                                  .radius(function(d) { return d.y; }));
+  } else {
+    link.attr("d", function(d) {
+      return "M" + d.source.y + "," + d.source.x
+        + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
+        + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
+        + " " + d.target.y + "," + d.target.x;
+    })
+  }
 
   let node = g.selectAll(".node")
     .data(imported.descendants())
     .enter()
     .append("g")
     .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
-    .attr("transform", function(d) { return "translate(" + radialPoint(d.x, d.y) + ")" });
+    .style("cursor", function(d) { if (d.data.url) { return "pointer"; }})
+    .on('click', function(d) { if (d.data.url) { window.open(d.data.url) } });
+
+  if (params.type == 'radial') {
+    node.attr("transform", function(d) { return "translate(" + radialPoint(d.x, d.y) + ")" });
+  } else {
+    node.attr("transform", function(d) { console.log(d); return "translate(" + d.y + "," + d.x + ")"; });
+  }
 
   node.append("circle")
-    // TODO: Confirm this works.
-    .style("fill", function(d) { return d.color })
+    .style("fill", function(d) { return d.data.color })
     .attr("r", function(d) { return 5 - (d.depth / 2); });
 
-  node.append("text")
+  let text = node.append("text")
     .style("font-size", function(d) { return (20 - d.depth * 2) + "px"; })
     .attr("dy", "0.31em")
-    .attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
-    .attr("text-anchor", "middle")
-    .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")translate(0,-" + (20 - (d.depth * 3)) + ")"; })
     .text(function(d) { return d.data.name; });
+
+  if (params.type == 'radial') {
+    text.attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
+      .attr("text-anchor", "middle")
+      .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")translate(0,-" + (20 - (d.depth * 3)) + ")"; });
+  } else {
+    text.attr("x", 6)
+      .attr("text-anchor", "center");
+  }
 }
 
-d3.select("#save")
-  .on("click", writeDownloadLink);
+function fillColors(data) {
+  if (data.children) {
+    data.children.forEach((d) => fillColors(d));
+  }
+
+  if (data.color == undefined && data.children) {
+    let colored_node = data.children.find((d) => d.color !== undefined);
+    if (colored_node !== undefined) {
+      data.color = colored_node.color;
+    }
+  }
+
+  return data;
+}
+
+function linkColor(d) {
+  if (d.target.data.color) {
+    return d.target.data.color;
+  }
+  return "#333";
+}
+
+d3.select("#save").on("click", writeDownloadLink);
 
 function writeDownloadLink() {
   let html = d3.select("svg")
