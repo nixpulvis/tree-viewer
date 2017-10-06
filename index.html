@@ -21,7 +21,7 @@
 <label for=modeInput1">Linear</label>
 <input id="modeInput2" type="radio" name="mode" value="radial">
 <label for=modeInput2">Radial</label>
-<input id="fileInput" type="file" name="input-name" />
+<button id="plotButton">Plot</button>
 <button id="save">Save SVG</button>
 
 <!-- NOTE: Change size here. -->
@@ -31,19 +31,264 @@
 <script src="./d3.js"></script>
 <script>
 
-// TODO: Collapsable
-// TODO: Margins and padding.
+let data = {
+    "name": "Risk Analysis",
+    "children": [
+        {
+            "name": "Seismic Hazard",
+            "children": [
+                {
+                    "name": "Fault Movement",
+                    "url": "file:///home/nixpulvis/Documents/ecen_5613/lab1/lab1.pdf"
+                },
+                {
+                    "name": "Design Response Spec.",
+                    "color": "red"
+                },
+                {
+                    "name": "National Hazard Maps"
+                },
+                {
+                    "name": "Deaggregation"
+                },
+                {
+                    "name": "Floor Response Spec."
+                },
+                {
+                    "name": "Random Excitation"
+                },
+                {
+                    "name": "Ground Motion",
+                    "children": [
+                        {
+                            "name": "Variability"
+                        },
+                        {
+                            "name": "Near vs Far Field"
+                        },
+                        {
+                            "name": "Horizontal vs Vertical"
+                        },
+                        {
+                            "name": "Selection and Scaling"
+                        },
+                        {
+                            "name": "Rotation"
+                        },
+                        {
+                            "name": "Permutation"
+                        },
+                        {
+                            "name": "Seismic Level"
+                        },
+                        {
+                            "name": "Spatial Incoherency"
+                        }
+                    ]
+                },
+                {
+                    "name": "Site Specific Hazard"
+                },
+                {
+                    "name": "Deterministic"
+                },
+                {
+                    "name": "Probabilistic"
+                },
+                {
+                    "name": "Real vs Synthetic"
+                },
+                {
+                    "name": "SSI",
+                    "children": [
+                        {
+                            "name": "Wave Propagation"
+                        },
+                        {
+                            "name": "Deconvolution"
+                        },
+                        {
+                            "name": "Radiation Damping"
+                        }
+                    ]
+                },
+                {
+                    "name": "Deconvolution"
+                },
+                {
+                    "name": "Probabilistic"
+                }
+            ]
+        },
+        {
+            "name": "Ageing Hazard",
+            "children": [
+                {
+                    "name": "Time"
+                },
+                {
+                    "name": "Creep"
+                },
+                {
+                    "name": "Temperature"
+                },
+                {
+                    "name": "Relative Humidity"
+                },
+                {
+                    "name": "Alkali Slica Reation",
+                    "children": [
+                        {
+                            "name": "Temperature History"
+                        },
+                        {
+                            "name": "RH History"
+                        },
+                        {
+                            "name": "Anisotropic Expansion"
+                        },
+                        {
+                            "name": "Retardation (cracks)"
+                        },
+                        {
+                            "name": "Degradation",
+                            "children": [
+                                {
+                                    "name": "Tensile Strength",
+                                    "color": "green"
+                                },
+                                {
+                                    "name": "Elastic Modulus"
+                                },
+                                {
+                                    "name": "Fracture Energy"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Chloride Dffusion",
+                    "color": "blue"
+                }
+            ]
+        },
+        {
+            "name": "Structural Analysis",
+            "children": [
+                {
+                    "name": "Model",
+                    "children": [
+                        {
+                            "name": "Continuum"
+                        },
+                        {
+                            "name": "Stick/Lumped Mass"
+                        }
+                    ]
+                },
+                {
+                    "name": "Analysis",
+                    "children": [
+                        {
+                            "name": "Deterministic",
+                            "children": [
+                                {
+                                    "name": "Static"
+                                },
+                                {
+                                    "name": "Pseudo-Dynamic",
+                                    "children": [
+                                        {
+                                            "name": "Seismic Coefficient"
+                                        },
+                                        {
+                                            "name": "Response Spectrum"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Dynamic",
+                                    "children": [
+                                        {
+                                            "name": "Modal Superposition"
+                                        },
+                                        {
+                                            "name": "Time Integration"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Probabilistic",
+                            "children": [
+                                {
+                                    "name": "Incremental Dynamic"
+                                },
+                                {
+                                    "name": "Multiple Strip"
+                                },
+                                {
+                                    "name": "Cloud Analysis",
+                                    "color": "green"
+                                },
+                                {
+                                    "name": "Endurance Time"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Constitutive Models",
+                    "children": [
+                        {
+                            "name": "Coninuum",
+                            "children": [
+                                {
+                                    "name": "Damage"
+                                },
+                                {
+                                    "name": "Plasticity"
+                                },
+                                {
+                                    "name": "Damage-Fracture"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Discrete",
+                            "children": [
+                                {
+                                    "name": "Mohr-Coulomb"
+                                },
+                                {
+                                    "name": "Cohesive Crack"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Damage Analysis"
+        },
+        {
+            "name": "Loss Analysis"
+        }
+    ]
+};
 
 let svg = d3.select("svg");
 let height = svg.attr("height");
 let width = svg.attr("width");
-let fileInput = document.getElementById('fileInput');
+let plotButton = document.getElementById('plotButton');
 
-fileInput.addEventListener('input', function(event) {
-  d3.json(event.currentTarget.files[0].name, function(e, d) {
-    let type = document.getElementById('modeInput1').checked ? 'linear' : 'radial';
-    plot(d, { type: type });
-  })
+plotButton.addEventListener('click', function(event) {
+  let type = document.getElementById('modeInput1').checked ? 'linear' : 'radial';
+  plot(data, { type: type });
 });
 
 function plot(data, params = {}) {
