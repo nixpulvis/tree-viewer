@@ -1,49 +1,10 @@
 <!DOCTYPE html>
 <head>
-<meta charset="utf-8">
-<style>
-.node {
-  cursor: pointer;
-}
-
-.overlay{
-    background-color:#EEE;
-}
-
-.node circle {
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px;
-}
-
-.node text {
-  font-size:10px;
-  font-family:sans-serif;
-}
-
-.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 1.5px;
-}
-
-.templink {
-  fill: none;
-  stroke: red;
-  stroke-width: 3px;
-}
-
-.ghostCircle.show{
-    display:block;
-}
-
-.ghostCircle, .activeDrag .ghostCircle{
-     display: none;
-}
-</style>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
-  <script src="./FileSaver.js.min"></script>
   <script src="./jquery.min.js"></script>
   <script src="./d3.js"></script>
   <script src="./data.js"></script>
@@ -54,8 +15,9 @@
     <label for="modeInput1">Linear</label>
     <input id="modeInput2" type="radio" name="mode" value="radial">
     <label for="modeInput2">Radial</label>
-    <button id="save">Save SVG</button>
+    <button id="update">Update</button>
   </div>
 
   <div id="tree-container"></div>
+
 </body>
