@@ -1,7 +1,0 @@
-{
-    "name": "foo",
-    "children": [
-        { "name": "bar" },
-        { "name": "baz" }
-    ]
-}

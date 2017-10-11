@@ -1,10 +1,14 @@
-  $(function() {
+$(function() {
   let data = window.data;
   let viewerWidth = $(document).width();
   let viewerHeight = $(document).height();
   let plotType = $('#modeInput1').prop('checked') ? 'linear' : 'radial';
   let xOffset = (plotType === 'radial') ? ((viewerWidth / 2) + 100) : 10;
   let yOffset = (plotType === 'radial') ? (viewerHeight / 2) : 0;
+
+  // TODO: Chrome.
+  // TODO: config height for line height.
+  // TODO: Link color.
 
   let zoomListener = d3.zoom()
     .scaleExtent([0.1, 3])
@@ -104,8 +108,8 @@
             }
           });
     } else {
-      text.attr("x", 6)
-          .attr("text-anchor", "center");
+      text.attr("x", (d) => d.parent ? 6 : -6)
+          .attr("text-anchor", (d) => d.parent ? "center" : "end");
     }
   }
 
