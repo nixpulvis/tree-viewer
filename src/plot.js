@@ -1,14 +1,12 @@
 $(function() {
   let data = window.data;
-  let viewerWidth = $(document).width();
-  let viewerHeight = $(document).height();
+  let viewerWidth = $("#widthInput").val() || $(document).width();
+  let viewerHeight = $("#heightInput").val() || $(document).height();
   let plotType = $('#modeInput1').prop('checked') ? 'linear' : 'radial';
-  let xOffset = (plotType === 'radial') ? ((viewerWidth / 2) + 100) : 10;
+  let xOffset = (plotType === 'radial') ? ((viewerWidth / 2) + 100) : 150;
   let yOffset = (plotType === 'radial') ? (viewerHeight / 2) : 0;
 
   // TODO: Chrome.
-  // TODO: config height for line height.
-  // TODO: Link color.
 
   let zoomListener = d3.zoom()
     .scaleExtent([0.1, 3])
@@ -40,7 +38,7 @@ $(function() {
   update(root);
 
   // HACK
-  $('#update').on('click', (e) => location.reload());
+  $('#controls').on('change', (e) => location.reload());
 
   function zoom() {
     svgGroup.attr("transform", d3.event.transform);
@@ -96,6 +94,8 @@ $(function() {
       .attr("dy", "0.31em")
       .text(function(d) { return d.data.name; })
       .style("cursor", (d) => d.data.url && "pointer")
+      .style("text-decoration", (d) => d.data.url && "underline")
+      .style("fill", (d) => d.data.color)
       .on('click', function(d) { if (d.data.url) { window.open(d.data.url) } });
     if (plotType === 'radial') {
       text.attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
@@ -108,8 +108,8 @@ $(function() {
             }
           });
     } else {
-      text.attr("x", (d) => d.parent ? 6 : -6)
-          .attr("text-anchor", (d) => d.parent ? "center" : "end");
+      text.attr("x", -6)
+          .attr("text-anchor", "end");
     }
   }
 

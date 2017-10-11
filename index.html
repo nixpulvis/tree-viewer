@@ -10,13 +10,20 @@
   <script src="data.js"></script>
   <script src="src/plot.js"></script>
 
-  <div id="controls-container">
+  <form id="controls" action="javascript:void(0);">
     <input id="modeInput1" type="radio" name="mode" value="linear" checked>
     <label for="modeInput1">Linear</label>
     <input id="modeInput2" type="radio" name="mode" value="radial">
     <label for="modeInput2">Radial</label>
-    <button id="update">Update</button>
-  </div>
+    <br />
+    <label for="widthInput">Width</label>
+    <input id="widthInput" type="number" />
+    <br />
+    <label for="heightInput">Height</label>
+    <input id="heightInput" type="number" />
+    <br />
+    <input type="submit" value="Update" />
+  </form>
 
   <div id="tree-container"></div>
 
