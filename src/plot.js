@@ -108,8 +108,8 @@ $(function() {
             }
           });
     } else {
-      text.attr("x", -6)
-          .attr("text-anchor", "end");
+      text.attr("x", (d) => !d.parent || d.children ? -6 : 6)
+          .attr("text-anchor", (d) => !d.parent || d.children ? "end" : "center");
     }
   }
 
